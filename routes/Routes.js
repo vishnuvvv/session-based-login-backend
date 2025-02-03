@@ -6,6 +6,7 @@ import {
   getUserWithId,
   updateUser,
   deleteUser,
+  deleteAllUsers,
   loginUser,
 } from "../controllers/userController.js";
 
@@ -16,6 +17,7 @@ Router.get("/user/:id", getUserWithId);
 Router.post("/user/add", addUser);
 Router.put("/user/:id", updateUser);
 Router.delete("/user/:id", deleteUser);
+Router.delete("/users", deleteAllUsers);
 Router.post("/user/login", loginUser);
 
 //For Dev use

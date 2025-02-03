@@ -1,6 +1,7 @@
-import jwt from "jsonwebtoken"; // Import jwt
-import bcrypt from "bcryptjs"; // Ensure bcrypt is properly imported
-import User from "../models/User.js"; // Your User model
+import User from "../models/User.js";
+import bcrypt from "bcryptjs";
+
+// All the controller functions related to the user.
 
 // ****************************************************
 
@@ -130,14 +131,27 @@ export const deleteUser = async (req, res, next) => {
 };
 
 // ****************************************************
-export const loginUser = async (req, res, next) => {
-  console.log("The login function has been triggered");
-  let { email, password } = req.body;
 
-  if (!email || !password) {
+export const deleteAllUsers = async (req, res, next) => {
+  console.log("deleteAllusers function triggered");
+  try {
+    await User.deleteMany({});
+    return res.status(200).json({ message: "All users deleted successfully" });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: "Failed to delete all users" });
+  }
+};
+
+// ****************************************************
+
+export const loginUser = async (req, res, next) => {
+  console.log("the login function has been triggered");
+  let { email, password } = req.body;
+  console.log(email, password);
+  if (!email && email === "" && !password && password === "") {
     return res.status(422).json({ message: "Invalid data" });
   }
-
   let existingUser;
   try {
     existingUser = await User.findOne({ email });
@@ -148,7 +162,7 @@ export const loginUser = async (req, res, next) => {
   if (!existingUser) {
     return res
       .status(404)
-      .json({ message: "Unable to find user with this email" });
+      .json({ message: "unable to find user with this email" });
   }
 
   const isPasswordCorrect = bcrypt.compareSync(password, existingUser.password);
@@ -157,19 +171,10 @@ export const loginUser = async (req, res, next) => {
     return res.status(400).json({ message: "Incorrect Password" });
   }
 
-  // Generate JWT token
-  const token = jwt.sign(
-    { id: existingUser.id, role: "user" }, // Payload
-    process.env.JWT_SECRET, // Your secret key
-    { expiresIn: "1h" } // Expiry time (optional)
-  );
-
-  // Send the token back to the client
   return res.status(201).json({
-    message: "Logged in",
-    token, // Send the token to the client
-    role: "user",
+    message: "loggedIn",
     id: existingUser.id,
+    role: "user",
     name: existingUser.name,
   });
 };

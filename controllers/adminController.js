@@ -1,51 +1,43 @@
-import jwt from "jsonwebtoken"; // Import jwt
-import bcrypt from "bcryptjs"; // Ensure bcrypt is properly imported
-import Admin from "../models/Admin.js"; // Your Admin model
+import Admin from "../models/Admin.js";
+import bcrypt from "bcryptjs";
+// import jwt from "jsonwebtoken";
 
 export const loginAdmin = async (req, res, next) => {
   console.log("this is the Login Admin Function");
   let { email, password } = req.body;
 
-  if (!email || !password) {
+  if (!email && email === "" && !password && password === "") {
+    console.log("email or passowrd is invalid");
     return res.status(422).json({ message: "Invalid data" });
   }
-
   let existingAdmin;
   try {
     existingAdmin = await Admin.findOne({ email });
   } catch (err) {
-    return console.log(err);
+    console.log(err);
   }
 
   if (!existingAdmin) {
     return res
       .status(404)
-      .json({ message: "Unable to find an Admin with this email" });
+      .json({ message: "unable to find an Admin with this email" });
   }
 
   const isPasswordCorrect = bcrypt.compareSync(
     password,
     existingAdmin.password
   );
+  console.log("Border crossed. Is the password correct? ", isPasswordCorrect);
 
   if (!isPasswordCorrect) {
     return res.status(400).json({ message: "Incorrect Password" });
   }
 
-  // Generate JWT token
-  const token = jwt.sign(
-    { id: existingAdmin.id, role: "admin" }, // Payload
-    process.env.JWT_SECRET, // Your secret key (store this in an environment variable)
-    { expiresIn: "1h" } // Expiry time (optional)
-  );
+  // Need to establish the JWT for more security.
 
-  // Send the token back to the client
-  return res.status(201).json({
-    message: "Logged in",
-    token, // Send the token to the client
-    role: "admin",
-    id: existingAdmin.id,
-  });
+  return res
+    .status(201)
+    .json({ message: "loggedIn", id: existingAdmin.id, role: "admin" });
 };
 
 // ****************************************************
